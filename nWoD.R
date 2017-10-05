@@ -53,6 +53,8 @@ replicate(1000, f.roll.die(10)) %>% hist
 
 ## normal attack vs defense:
 ## roll attack-defense
+## full dodge:
+## roll attack vs roll defense x2
 
 f.roll.attack <- function(att, def, dodge = FALSE){
   if (!dodge) {
@@ -66,11 +68,18 @@ f.roll.attack <- function(att, def, dodge = FALSE){
 }
 
 
-f.roll.attack(5, 5, dodge = FALSE)
+replicate(1000, f.roll.attack(6, 3, dodge = TRUE)) %>% hist()
 
 
-## full dodge:
-## roll attack vs roll defense x2
+dta <- expand.grid(att = 3:4, def = 1:2, dodge = c(TRUE, FALSE)) %>% 
+  arrange(att, def)
+
+dta %>% 
+  mutate(
+    tt = purrr::pmap(., f.roll.attack, att = .$att, def = .$def, dodge = .$dodge)
+  )
+
+purrr::pmap(dta, f.roll.attack(att = dta$att, def = dta$def, dodge = dta$dodge))
 
 
 
