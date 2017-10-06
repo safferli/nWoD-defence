@@ -58,6 +58,7 @@ f.roll.attack <- function(att, def, dodge = FALSE){
   # full dodge: roll attack vs roll defense x2
   } else {
     (f.roll.die(att) - f.roll.die(def * 2)) %>% 
+      # can't have less than 0 damage
       if_else(. < 0, 0, .) %>% 
       return()
   }
@@ -74,12 +75,12 @@ f.simulate.attack <- function(repl = 10, att, def, dodge){
 
 
 
-dta <- tidyr::crossing(att = 3:4, def = 1:2, dodge = c(TRUE, FALSE)) %>% 
+dta <- tidyr::crossing(att = 6:12, def = 2:5, dodge = c(TRUE, FALSE)) %>% 
   arrange(att, def)
 
 dta %<>% 
   mutate(
-    repl = 10
+    repl = 1000
   ) %>% 
   mutate(
     sim = purrr::pmap(., f.simulate.attack)
@@ -87,12 +88,36 @@ dta %<>%
 
 
 
-dta %>% unnest() %>% 
+dta %>% 
+  unnest() %>% 
+  mutate(sim = parse_integer(sim)) %>% 
   ggplot()+
-  geom_histogram(aes(x=sim, fill = dodge), position = "dodge")
+  geom_histogram(aes(x=sim, fill = dodge), position = "dodge", bins = max(dta %>% unnest %>% .$sim + 2L))+
+  #geom_text(aes(x = 6, y = 600, label = paste0("average: ", mean(sim))))+
+  #stat_summary(aes(x = 6, y = 600, label = ..y..), fun.y = mean, geom = "text")+
+  facet_grid(att ~ def)+
+  theme_bw()+
+  theme(plot.title = element_text(lineheight=.8, face="bold"))+
+  labs(
+    title = "nWoD attack roll simulations", 
+    x = "", 
+    y = "damage dealt"
+  )
+
+# https://stackoverflow.com/questions/15720545/use-stat-summary-to-annotate-plot-with-number-of-observations
+
+# n_fun <- function(x){
+#   return(data.frame(y = median(x), label = paste0("n = ",length(x))))
+# }
 
 
 
+# https://stackoverflow.com/questions/20139978/ggplot2-label-values-of-barplot-that-uses-fun-y-mean-of-stat-summary
+# ggplot(data= mtcars) +
+#   aes(x = factor(gear),
+#       y = mpg)+
+#   #stat_summary(aes(fill = factor(gear)), fun.y=mean, geom="bar")
+#   stat_summary(aes(label=round(..y..,2)), fun.y=mean, geom="text", size=6, vjust = -0.5)
 
 
 
