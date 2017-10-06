@@ -3,7 +3,7 @@ rm(list = ls()); gc(); gc()
 options(bitmapType='cairo')
 options(scipen = 999)
 
-library(dplyr)
+library(tidyverse)
 
 
 # Define your workspace: "X:/xxx/"
@@ -46,19 +46,16 @@ f.roll.die <- function(n = 1, eightagain = FALSE, nineagain = FALSE, rote = FALS
   return(successes)
 }
 
+# replicate(1000, f.roll.die(10)) %>% hist
 
-replicate(1000, f.roll.die(10)) %>% hist
 
-
-## normal attack vs defense:
-## roll attack-defense
-## full dodge:
-## roll attack vs roll defense x2
 
 f.roll.attack <- function(att, def, dodge = FALSE){
+  # normal attack vs defense: roll attack-defense
   if (!dodge) {
     f.roll.die(att - def) %>% 
       return()
+  # full dodge: roll attack vs roll defense x2
   } else {
     (f.roll.die(att) - f.roll.die(def * 2)) %>% 
       if_else(. < 0, 0, .) %>% 
@@ -80,16 +77,19 @@ f.simulate.attack <- function(repl = 10, att, def, dodge){
 dta <- tidyr::crossing(att = 3:4, def = 1:2, dodge = c(TRUE, FALSE)) %>% 
   arrange(att, def)
 
-dta %>% 
+dta %<>% 
   mutate(
     repl = 10
   ) %>% 
   mutate(
-    tt = purrr::pmap(., f.simulate.attack)
+    sim = purrr::pmap(., f.simulate.attack)
   )
 
 
 
+dta %>% unnest() %>% 
+  ggplot()+
+  geom_histogram(aes(x=sim, fill = dodge), position = "dodge")
 
 
 
