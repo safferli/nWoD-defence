@@ -7,8 +7,8 @@ library(dplyr)
 
 
 # Define your workspace: "X:/xxx/"
-#wd <- "D:/github/nWoD-defense/"
-wd <- path.expand("~/Documents/github/nWoD-defense")
+wd <- "C:/github/nWoD-defense/"
+#wd <- path.expand("~/Documents/github/nWoD-defense")
 setwd(wd)
 
 
@@ -71,15 +71,14 @@ f.roll.attack <- function(att, def, dodge = FALSE){
 replicate(1000, f.roll.attack(6, 3, dodge = TRUE)) %>% hist()
 
 
-dta <- expand.grid(att = 3:4, def = 1:2, dodge = c(TRUE, FALSE)) %>% 
+dta <- tidyr::crossing(att = 3:4, def = 1:2, dodge = c(TRUE, FALSE)) %>% 
   arrange(att, def)
 
 dta %>% 
   mutate(
-    tt = purrr::pmap(., f.roll.attack, att = .$att, def = .$def, dodge = .$dodge)
+    tt = purrr::pmap_int(., f.roll.attack)
   )
 
-purrr::pmap(dta, f.roll.attack(att = dta$att, def = dta$def, dodge = dta$dodge))
 
 
 
