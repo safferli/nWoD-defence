@@ -33,10 +33,9 @@ f.get.rerolls <- function(x, rerolls = 0, eightagain = FALSE, nineagain = FALSE,
 
 f.roll.die <- function(n = 1, eightagain = FALSE, nineagain = FALSE, rote = FALSE){
   
-  rolls <- sample(1:10, size = n, replace = TRUE)
-
-  successes <- f.get.successes(rolls)
-  rerolls <- f.get.rerolls(rolls, eightagain = eightagain, nineagain = nineagain, rote = rote)
+  # initialise; initial "reroll" is 100% = n
+  rerolls <- n
+  successes <- 0
   
   while(rerolls > 0){
     rr <- sample(1:10, size = rerolls, replace = TRUE)
