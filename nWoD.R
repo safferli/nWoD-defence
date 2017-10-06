@@ -61,13 +61,20 @@ f.roll.attack <- function(att, def, dodge = FALSE){
       return()
   } else {
     (f.roll.die(att) - f.roll.die(def * 2)) %>% 
-      if_else(. < 0, 0L, .) %>% 
+      if_else(. < 0, 0, .) %>% 
       return()
   }
 }
 
+# replicate(1000, f.roll.attack(6, 3, dodge = TRUE)) %>% hist()
 
-replicate(1000, f.roll.attack(6, 3, dodge = TRUE)) %>% hist()
+
+f.simulate.attack <- function(repl = 10, att, def, dodge){
+  replicate(repl, f.roll.attack(att = att, def = def, dodge = dodge))
+}
+
+# f.simulate.attack(10, 6, 3, FALSE)
+
 
 
 dta <- tidyr::crossing(att = 3:4, def = 1:2, dodge = c(TRUE, FALSE)) %>% 
@@ -75,8 +82,14 @@ dta <- tidyr::crossing(att = 3:4, def = 1:2, dodge = c(TRUE, FALSE)) %>%
 
 dta %>% 
   mutate(
-    tt = purrr::pmap_int(., f.roll.attack)
+    repl = 10
+  ) %>% 
+  mutate(
+    tt = purrr::pmap(., f.simulate.attack)
   )
+
+
+
 
 
 
