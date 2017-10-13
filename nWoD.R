@@ -76,21 +76,28 @@ f.simulate.attack <- function(repl = 10, att, def, dodge){
 
 
 dta <- tidyr::crossing(att = 6:12, def = 2:5, dodge = c(TRUE, FALSE)) %>% 
-  arrange(att, def)
-
-dta %<>% 
+  arrange(att, def) %>% 
   mutate(
     repl = 1000
   ) %>% 
   mutate(
     sim = purrr::pmap(., f.simulate.attack)
-  )
+  ) %>% 
+  unnest() %>% 
+  mutate(sim = parse_integer(sim)) 
+
+aggregations <- dta %>% 
+  group_by(att, def, dodge) %>% 
+  summarise(mean = mean(sim), median = median(sim), sd = sd(sim))
+
+aggregations %>% 
+  ggplot()+
+  geom_text_repel(aes(x=att, y=def, label=mean, colour = dodge), position = "dodge")
+
 
 
 
 dta %>% 
-  unnest() %>% 
-  mutate(sim = parse_integer(sim)) %>% 
   ggplot()+
   geom_histogram(aes(x=sim, fill = dodge), position = "dodge", bins = max(dta %>% unnest %>% .$sim + 2L))+
   #geom_text(aes(x = 6, y = 600, label = paste0("average: ", mean(sim))))+
