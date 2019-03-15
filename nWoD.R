@@ -4,6 +4,7 @@ options(bitmapType='cairo')
 options(scipen = 999)
 
 library(tidyverse)
+library(ggrepel)
 
 
 # Define your workspace: "X:/xxx/"
@@ -78,7 +79,7 @@ f.simulate.attack <- function(repl = 10, att, def, dodge){
 dta <- tidyr::crossing(att = 6:12, def = 2:5, dodge = c(TRUE, FALSE)) %>% 
   arrange(att, def) %>% 
   mutate(
-    repl = 1000
+    repl = 10000
   ) %>% 
   mutate(
     sim = purrr::pmap(., f.simulate.attack)
@@ -106,10 +107,14 @@ dta %>%
   theme_bw()+
   theme(plot.title = element_text(lineheight=.8, face="bold"))+
   labs(
-    title = "nWoD attack roll simulations", 
-    x = "", 
-    y = "damage dealt"
+    title = paste("nWoD attack roll simulations:", max(dta$repl), "rolls"), 
+    subtitle = "attack dice (rows) vs defence (cols)",
+    x = "damage dealt", 
+    y = ""
   )
+
+ggsave("nWoD-attack-roll-simulations.png", width = 30, height = 30/((1+sqrt(5))/2), units = "cm")
+
 
 # https://stackoverflow.com/questions/15720545/use-stat-summary-to-annotate-plot-with-number-of-observations
 
